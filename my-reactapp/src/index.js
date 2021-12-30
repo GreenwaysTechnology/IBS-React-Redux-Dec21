@@ -1,67 +1,42 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import 'bootstrap/dist/css/bootstrap.css'
+import ReactDOM from 'react-dom'
 
-const Profile = props => {
-    return <div className="container">
-        <h1>Id: {props.id}</h1>
-        <h2>Name {props.firstName} {props.lastName}</h2>
-        <h2>Status {props.status ? "Available" : "Not Available"}</h2>
-        <h2>Contact {props.city} {props.contact.email}</h2>
-        <p>Skills</p>
-        <ul>
-            {
-                props.skills.map((skill, index) => {
-                    return <li key={index}>{skill}</li>
-                })
+const theme = {
+    dark: "black"
+}
+//create context Object
+
+// const ThemeContext = React.createContext('dark')
+const { Provider, Consumer } = React.createContext('dark')
+
+//provider who provides data to child component.
+
+const App = () => <div>
+    <Provider value={theme}>
+        <Page />
+    </Provider>
+</div>
+const Page = props => <>
+    <Toolbar />
+</>
+const Toolbar = props => <div>
+    <ThemedButton />
+</div>
+
+const ThemedButton = props => <div>
+    <Consumer>
+        {
+            theme => {
+                return <Button theme={theme.dark} />
             }
-        </ul>
-    </div>
-}
-
-const App = () => {
-
-    const city = "Coimbatore"
-    const status = true;
-    const contact = {
-        email: 'subramanian.md@gmail.com',
-        mobile: 1234567890
-    }
-    const skills = ["React", "Microservices", "Devops"];
+        }
+    </Consumer>
+</div>
+const Button = props => <div>
+    <button style={{ color: 'whitesmoke', backgroundColor: props.theme }}>Hello!</button>
+</div>
 
 
-    return <div>
-        <Profile
-            id={1}
-            firstName="Subramanian"
-            lastName="Murugan"
-            city={city}
-            status={status}
-            contact={contact}
-            skills={skills}
-        />
-        <Profile
-            id={2}
-            firstName="Subramanian"
-            lastName="Murugan"
-            city={city}
-            status={status}
-            contact={contact}
-            skills={skills}
-
-        />
-        <Profile
-            id={3}
-            firstName="Subramanian"
-            lastName="Murugan"
-            city={city}
-            status={status}
-            contact={contact}
-            skills={skills}
-
-        />
-    </div>
-}
 
 
 ReactDOM.render(<App />, document.getElementById('root'))
