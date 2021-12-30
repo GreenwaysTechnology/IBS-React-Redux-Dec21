@@ -1,42 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom'
+//Custom Hooks
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { useWindowTitle } from './hooks/usewindowtitlehook';
+import { useWindowWidth } from './hooks/usewindowwidthhook';
+//features;
 
-const theme = {
-    dark: "black"
+const Customer = props => {
+    const { setScreen, screen } = useWindowTitle('Customer Manager!!!')
+    const width = useWindowWidth();
+    return <div>
+        <h1>Custom Hooks</h1>
+        <h1>Current Window width {width}</h1>
+        <button onClick={() => {
+            setScreen('CustomerManager App-Update')
+        }}>Update Title</button>
+    </div>
+};
+
+const App = () => {
+    return <div>
+        <Customer />
+    </div>
 }
-//create context Object
-
-// const ThemeContext = React.createContext('dark')
-const { Provider, Consumer } = React.createContext('dark')
-
-//provider who provides data to child component.
-
-const App = () => <div>
-    <Provider value={theme}>
-        <Page />
-    </Provider>
-</div>
-const Page = props => <>
-    <Toolbar />
-</>
-const Toolbar = props => <div>
-    <ThemedButton />
-</div>
-
-const ThemedButton = props => <div>
-    <Consumer>
-        {
-            theme => {
-                return <Button theme={theme.dark} />
-            }
-        }
-    </Consumer>
-</div>
-const Button = props => <div>
-    <button style={{ color: 'whitesmoke', backgroundColor: props.theme }}>Hello!</button>
-</div>
-
-
-
-
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'));
