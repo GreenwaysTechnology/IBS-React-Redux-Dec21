@@ -1,0 +1,1556 @@
+..............................................................................................
+				    Redux
+............................................................................................
+
+
+MVC -way of building web apps
+ This is design pattern mostly used in industry.
+
+
+flux - way of building web apps
+ This is design pattern created by face book
+
+Flux  Design Pattern:
+.....................
+
+flux.js - the first flux implemenation.
+
+Flux Design Pattern Components
+
+1.View 
+  The Presentation layer , which shows data and get data 
+  View is React
+2.Action
+   The Request Payload It is similar to HTTP request .
+   It carries what todo ,and sometimes payload
+     =>It is similar to HTTP .
+        In HTTP we say that GET /todos - what todo 
+        In HTTP we say that GET /todos/1 - what todo with payload
+
+4.Dispatcher
+   It is trasporter which transports actions similar to http protocal
+
+5.Store
+   It is central HUB.
+   It is door way to enter and exit flux
+   View always subscribes with Store for data(state)
+   Store contains data(State) and application logics.
+
+
+Flux pattern implementations:
+
+1.flux.js - the first flux lib
+2.Redux  - Statement management lib
+3.MobX - Statement lib
+..............................................................................................
+				Statement management
+..............................................................................................
+
+What is state?
+ State is data.
+
+How to manage state in React?
+1.props
+   way to keep data always outside component,
+   so the responsiblity of component is not managining data,and mutating data.
+  Via props Component act as pure UI layer/Presentation Layer.
+2.state
+  Way to keep data inside component.
+  Component takes care of mutatations(query,add,update,delete,filter)
+  Component dumps state as well as UI.
+
+According to React/UI , state can be classified into two category.
+
+1.Application/Biz state
+   Customers,orders,users etc....
+2.UI state
+   On/Off -  dark mode on:off
+   show/hide
+   lanaguage
+   etc....
+
+Thumb Rules:
+  1.Separate out all biz state outside component, keep in the separate place where you can
+ manage,mutate data.
+  2.Keep all ui state inside component.
+ 
+.............................................................................................
+				Application/Biz state : Where to keep
+..............................................................................................
+
+1.Inside React itself
+    How to isloate inside react.
+via useReducer.
+
+import React, { useReducer } from 'react';
+import ReactDOM from 'react-dom'
+import produce from 'immer';
+
+//biz logic : reducer
+export const reducer = (state, action) => {
+    switch (action.type) {
+        case 'increment':
+            return produce(state, draft => {
+                draft.count += 1
+            })
+        case 'decrement':
+            return {
+                count: state.count - 1
+            }
+        default:
+            return state;
+    }
+}
+
+
+const Counter = props => {
+    const [state, dispatch] = useReducer(reducer, { count: 0 })
+    return <div>
+        <h1>{state.count}</h1>
+        <button onClick={() => dispatch({ type: 'increment' })}>+</button>
+    </div>
+}
+
+const App = props => {
+    return <Counter />
+}
+
+ReactDOM.render(<Counter />, document.getElementById('root'));
+
+2.Outside React
+
+
+What is Redux?
+
+Redux is a pattern and implementation for managing application state, using events called "actions".
+
+It acts as a centeralized store for state that needs to be used across your entire application , state to be updated in a predictable fashion.
+
+When to use Redux?
+
+=>If you have large amount of data that needed in many places of app.
+=>The app state is updated frequently over period of time.
+=>The logic to update the state may be complex.
+=>The app has mediuxm or large sized codebase,might be worked on by many people.
+
+
+Redux libs:
+
+redux.js
+react-redux
+
+Advanced libs
+redux-toolkit
+redux-dev tools
+
+Redux Basics:
+
+1.The redux store
+
+=>The center of every redux application is the store.
+  A store is a container that holds your application's global data.
+=>The data is stored in the form of javascript literal object.
+  let state = {
+
+  }
+=>The store's data is encapsulated inside store object
+
+  function Store() {
+    let state = {}
+   
+   this.getState = function() {
+     return state;
+   }
+   //other store methods
+   dispatch
+   subscribe
+
+ }
+ function createStore(){
+    return new Store();
+ }
+
+
+let store = createStore();
+
+store.getState() => {}
+
+2.state
+   object holding app data.= inital state and updated state
+
+3.actions
+
+  It is like request.
+  action is request payload which describes what todo.
+  action can tell , increment,decrement,save,update,delete
+
+  action can be represented by an object
+
+  let action = {
+    type:'increment'
+  }
+
+UI---dispatcher-action-----Store---|------Bizlogic(Reducer)
+
+
+4.dispatcher
+
+  Function, responsible for sending actions.
+  Store has method called dispatch method
+
+  let action = {
+    type:'increment'
+  }
+  store.dispatch(action)------Store
+
+5.Reducer
+  A function that receives the current state and an action object, and decides how to update the state.
+  Reducer is equal to setState method in react
+  setState is pure function, similar reducer is pure function
+
+  (initState,action)=>newState
+
+6.subscribe:
+  it is listener function part of store, gets called once if reducer returns new state.
+  from the subscribe function only view gets data.
+
+                  "From Redux state is supplied to React as props".
+
+..............................................................................................
+
+
+..............................................................................................
+			      Getting started with redux
+..............................................................................................
+
+steps :
+
+npm install redux
+//core features of redux : store,dispatch,actions,subscriptions
+import { createStore } from "redux";
+import produce from "immer";
+
+//action constants
+const increment = 'increment';
+const decrement ='decrement'
+
+//reducer : It is pure function,should return always immutble data.
+//reducer is function having two args - initial state, action
+const counterReducer = (initalState = { value: 0 }, action) => {
+    switch (action.type) {
+        case increment:
+            return produce(initalState, draft => {
+                draft.value += 10;
+            })
+        case decrement:
+            return produce(initalState, draft => {
+                draft.value -= 2;
+            })
+        default:
+            return initalState;
+    }
+}
+
+const store = createStore(counterReducer)
+
+//subscribe listener:
+store.subscribe(() => {
+    console.log(store.getState())
+})
+
+//request sending
+//action 
+let incrementAction = {
+    type: increment
+}
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+
+store.dispatch({ type: decrement })
+........................................................................................ 
+.............................................................................................
+				Can we send input to the reducer?
+
+
+Yes, we can pass input, we call as payload
+
+let action = {
+  type:decrement,
+  payload:input
+}
+
+
+
+//core features of redux : store,dispatch,actions,subscriptions
+import { createStore } from "redux";
+import produce from "immer";
+
+//action constants
+const increment = 'increment';
+const decrement ='decrement'
+
+//reducer : It is pure function,should return always immutble data.
+//reducer is function having two args - initial state, action
+const counterReducer = (initalState = { value: 0 }, action) => {
+    switch (action.type) {
+        case increment:
+            return produce(initalState, draft => {
+                draft.value += action.payload
+            })
+        case decrement:
+            return produce(initalState, draft => {
+                draft.value -= action.payload
+            })
+        default:
+            return initalState;
+    }
+}
+
+const store = createStore(counterReducer)
+
+//subscribe listener:
+store.subscribe(() => {
+    console.log(store.getState())
+})
+
+//request sending
+//action 
+let incrementAction = {
+    type: increment,
+    payload: 5
+}
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+store.dispatch(incrementAction)
+
+store.dispatch({ type: decrement ,payload:3 })
+
+..............................................................................................					Dynamic payload
+..............................................................................................
+
+Getting payload dynamically from the view, send to reducer, computes the state accordingly.
+
+Action Creators:
+
+ -it is javascript function which returns action object with input.
+
+function incrementActionCreator(payload) {
+  //action object
+  return {
+   type:increment,
+   //payload:payload
+   payload
+ }
+}
+
+store.dispatch(incrementActionCreator(80))
+
+//core features of redux : store,dispatch,actions,subscriptions
+import { createStore } from "redux";
+import produce from "immer";
+
+//action constants
+const increment = 'increment';
+const decrement = 'decrement'
+
+//reducer : It is pure function,should return always immutble data.
+//reducer is function having two args - initial state, action
+const counterReducer = (initalState = { value: 0 }, action) => {
+    switch (action.type) {
+        case increment:
+            return produce(initalState, draft => {
+                draft.value += action.payload
+            })
+        case decrement:
+            return produce(initalState, draft => {
+                draft.value -= action.payload
+            })
+        default:
+            return initalState;
+    }
+}
+
+const store = createStore(counterReducer)
+
+//subscribe listener:
+store.subscribe(() => {
+    console.log(store.getState())
+})
+
+//action creator 
+const incActionCreator = payload => ({
+    type: increment,
+    payload
+})
+
+store.dispatch(incActionCreator(4))
+store.dispatch(incActionCreator(4))
+store.dispatch(incActionCreator(4))
+store.dispatch({ type: decrement, payload: 3 })
+
+..............................................................................................
+				Multi Reducer-Single Store
+..............................................................................................
+
+=>createStore will accept only one reducer as parameter
+  createStore(rd1,rd2,rd3...) -invalid
+=>redux stores data in a single state object
+
+ let appstate = {
+     reducer1: {}
+     reducer2:{}
+ }
+=>coimbineReducers({})
+
+const rootReducer = combineReducers({
+    increment: incrementReducer,
+    decrement: decrementReducer
+})
+export const store = createStore(rootReducer);
+
+ let appstate = {
+     increment: {}
+     decrement:{}
+ }
+
+console.log(store.getState())
+//core features of redux : store,dispatch,actions,subscriptions
+import { createStore, combineReducers } from "redux";
+import produce from "immer";
+
+//action constants
+const increment = 'increment';
+const decrement = 'decrement'
+
+const incrementReducer = (initalState = { value: 10 }, action) => {
+    switch (action.type) {
+        case increment:
+            return produce(initalState, draft => {
+                draft.value += action.payload
+            })
+        default:
+            return initalState;
+    }
+}
+
+const decrementReducer = (initalState = { value: 10 }, action) => {
+    switch (action.type) {
+        case increment:
+        case decrement:
+            return produce(initalState, draft => {
+                draft.value -= action.payload
+            })
+        default:
+            return initalState;
+    }
+}
+
+const reducers = combineReducers({
+    increment: incrementReducer,
+    decrement: decrementReducer
+})
+
+const store = createStore(reducers)
+
+//subscribe listener:
+store.subscribe(() => {
+    console.log(store.getState())
+})
+
+//action creator 
+const incActionCreator = payload => ({
+    type: increment,
+    payload
+})
+
+store.dispatch(incActionCreator(4))
+// store.dispatch(incActionCreator(4))
+// store.dispatch(incActionCreator(4))
+store.dispatch({ type: decrement, payload: 2 })
+store.dispatch({ type: decrement, payload: 2 })
+..............................................................................................
+			 Naming Conventsion for action constants
+..............................................................................................
+
+//action constants
+export const increment = 'counter/increment';  //domainname/actionName
+export const decrement = 'counter/decrement';
+
+UPPER CASE CONVENTION:
+export const INCREMENT= 'counter/increment';  //domainname/actionName
+But recent practice , keep lower case
+export const increment= 'counter/increment';  //domainname/actionName
+
+.............................................................................................
+			  React with Redux Integration
+.............................................................................................
+
+There is official binding lib called react with redux, which takes of abstracting lot of boiler plate code when we build react with redux.
+
+npm install react-redux
+
+//react with redux   : Redux,Binding,React
+import { createStore } from "redux";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { connect, Provider } from 'react-redux'
+import produce from "immer";
+
+//redux
+const initalState = {
+    value: 100
+}
+const counterReducer = (state = initalState, action) => {
+    //logic
+    switch (action.type) {
+        case 'counter/increment':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value++;
+            });
+        case 'counter/incrementByAmount':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value += action.payload;
+            });
+        default:
+            return state;
+    }
+}
+const store = createStore(counterReducer)
+/////////////////////////////////////////////////////////////////////////////////////
+//react - mapper code 
+//extracting state from the redux and supply as prop to react: state as prop
+
+function mapStateToProps(appState){
+    //extractor
+    //state.value or
+    //incase multi reducer
+    //state.reducer.value
+    return {
+      //key:value // reactprop:reduxstate
+      value : appState.value
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//React : Higher Order Component from the Normal Component.
+//Higher order component is the represention of fp called Higher order function.
+//if you are oo developer you might aware the design pattern called "Decorator design pattern" :  decorates the object from existing object.
+//Higher order component is decorated component : {Redux + React}
+//connect is the function which helps to create HOC.
+
+//Normal Component
+const Counter = props => {
+    console.log(props)
+
+    const onIncrement = evt => {
+        props.dispatch({ type: 'counter/increment' })
+    }
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {props.value}</h2>
+        <button onClick={onIncrement}>+</button>
+    </>
+}
+//hoc 
+const CounterHOC = connect(mapStateToProps)(Counter)
+
+
+const App = props => <div>
+    <Provider store={store}>
+        <CounterHOC />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+..............................................................................................				Multi Reducer(coimbineReducer) - Mapper funcition
+..............................................................................................
+//react with redux   : Redux,Binding,React
+import { createStore,combineReducers } from "redux";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { connect, Provider } from 'react-redux'
+import produce from "immer";
+
+//redux
+const initalState = {
+    value: 100
+}
+const counterReducer = (state = initalState, action) => {
+    //logic
+    switch (action.type) {
+        case 'counter/increment':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value++;
+            });
+        case 'counter/incrementByAmount':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value += action.payload;
+            });
+        default:
+            return state;
+    }
+}
+const reducers = combineReducers({
+    increment:counterReducer
+})
+
+const store = createStore(reducers)
+/////////////////////////////////////////////////////////////////////////////////////
+//react - mapper code 
+//extracting state from the redux and supply as prop to react: state as prop
+
+function mapStateToProps(appState){
+    console.log('appState',appState)
+    //extractor
+    //state.value or
+    //incase multi reducer
+    //state.reducer.value
+    return {
+      //key:value // reactprop:reduxstate
+      value : appState.increment.value
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//React : Higher Order Component from the Normal Component.
+//Higher order component is the represention of fp called Higher order function.
+//if you are oo developer you might aware the design pattern called "Decorator design pattern" :  decorates the object from existing object.
+//Higher order component is decorated component : {Redux + React}
+//connect is the function which helps to create HOC.
+
+//Normal Component
+const Counter = props => {
+    console.log(props)
+
+    const onIncrement = evt => {
+        props.dispatch({ type: 'counter/increment' })
+    }
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {props.value}</h2>
+        <button onClick={onIncrement}>+</button>
+    </>
+}
+//hoc 
+const CounterHOC = connect(mapStateToProps)(Counter)
+
+
+const App = props => <div>
+    <Provider store={store}>
+        <CounterHOC />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+
+
+..............................................................................................
+                           How to remove-mapStateProps,connect,HOC
+..............................................................................................
+
+React-Redux Hooks:
+  React Redux provides a pair of custom React hooks that allow your React components to interact with the Redux store.
+
+"useSelector" reads a value from the store state and subscribes to updates, while useDispatch returns the store's dispatch method to let you dispatch actions.
+
+
+
+"useSelector" -> mapStateToProps
+"useDispatch" -  mapDispatch
+
+//react with redux   : Redux,Binding,React ,hooks
+import { createStore, combineReducers } from "redux";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { connect, Provider } from 'react-redux'
+import produce from "immer";
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+const counterReducer = (state = initalState, action) => {
+    //logic
+    switch (action.type) {
+        case 'counter/increment':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value++;
+            });
+        case 'counter/incrementByAmount':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value += action.payload;
+            });
+        default:
+            return state;
+    }
+}
+const reducers = combineReducers({
+    increment: counterReducer
+})
+const store = createStore(reducers)
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement({ type: 'counter/increment' })}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+.............................................................................................
+ 			       More Abstractions is our Objective
+.............................................................................................
+
+  Among redux community people started thinking how to reduce code, by providing common boiler plate code as much as possible.
+
+                             The Birth of Redux toolkit Lib
+..............................................................................................
+
+What is redux toolkit?
+  It is wrapper on redux.
+  Redux toolkit is opinionated lib.
+   =>Infra code - how to reduce infra code as much as possible by way of adding abstractions
+   =>Application logic code -Deve can focus logic
+
+  It is Very simple 
+   It is easy to setup project, creating reducers,immutable code.
+
+
+Why RTK?
+=>Configuring store is too complicated
+=>I have to add lot of packages to do anything usefull.
+=>Redux requires too much boiler plate
+
+
+How to start RTK?
+
+First Time Create react project
+
+create-react-app my-app --template redux ---->which will install all rtk 
+
+create-react-app my-app --template redux-typescript
+
+Existing applications
+
+npm install @redux/toolkit
+
+..............................................................................................
+			First Step :Introducing configStore Api
+..............................................................................................
+import { combineReducers } from "redux";
+import { configureStore } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { connect, Provider } from 'react-redux'
+import produce from "immer";
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+const counterReducer = (state = initalState, action) => {
+    //logic
+    switch (action.type) {
+        case 'counter/increment':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value++;
+            });
+        case 'counter/incrementByAmount':
+            console.log("Old state", state, "action", action)
+            return produce(state, draft => {
+                draft.value += action.payload;
+            });
+        default:
+            return state;
+    }
+}
+const reducers = combineReducers({
+    increment: counterReducer
+})
+
+// const store = createStore(reducers)
+const store = configureStore({
+    reducer: reducers
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement({ type: 'counter/increment' })}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+..............................................................................................
+				Reducers and Redux Tool Kit
+..............................................................................................
+
+Reducers in legacy Redux:
+
+1.write reducer template code
+
+ function myreducer(state=initstate,action) {
+    swtich...case and logic
+ }
+2.Immutable logic
+   => legacy javascript pattern
+   => object.assign pattern
+   => spread operator
+   => immer
+
+if you select immer, you have to import immer produce function and write logic. what if i want abstract immer itself.
+   
+RTK gives to write reducer template in more readable way and abstracted immer logic
+
+createReducer();
+
+
+It is utility function reduces lot of boiler plate code.
+
+=>It uses immer internally, so we dont need to write immutablity code manually.
+=>builder and map patterns are used to eleminate hardcode switch...case ,and actions
+
+..............................................................................................
+				 Create Reducer - Builder Pattern
+..............................................................................................
+
+import { combineReducers } from "redux";
+import { configureStore, createReducer } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+//builder is variable holding BuilderObject=>immer logic is implicit
+const counterReducer = createReducer(initalState, builder => {
+    //logic
+    builder.addCase('counter/increment', (state, action) => {
+        state.value++;
+    }).addCase('counter/decrement', (state, action) => {
+        state.value--;
+    }).addDefaultCase((state, action) => { })
+})
+
+const reducers = combineReducers({
+    increment: counterReducer
+})
+
+// const store = createStore(reducers)
+const store = configureStore({
+    reducer: reducers
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement({ type: 'counter/increment' })}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+..............................................................................................
+
+..............................................................................................
+			Map Object Notation Pattern
+..............................................................................................
+ 
+builder vs map:
+
+builder can be used in ts and js env
+map cant be used in ts env.
+
+
+import { combineReducers } from "redux";
+import { configureStore, createReducer } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+
+//Builder Pattern
+// const counterReducer = createReducer(initalState, builder => {
+//     //logic
+//     builder.addCase('counter/increment', (state, action) => {
+//         state.value++;
+//     }).addCase('counter/decrement', (state, action) => {
+//         state.value--;
+//     }).addDefaultCase((state, action) => { })
+// })
+
+//Map object Notation Pattern
+const incrementReducer = createReducer(initalState, {
+    'counter/increment': (state, action) => {
+        state.value++;
+    }
+});
+const decrementReducer = createReducer(initalState, {
+    'counter/decrement': (state, action) => {
+        state.value--;
+    }
+})
+
+const reducers = combineReducers({
+    increment: counterReducer
+})
+
+// const store = createStore(reducers)
+const store = configureStore({
+    reducer: reducers
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement({ type: 'counter/increment' })}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+
+............................................................................................
+				Actions -createAction
+.............................................................................................
+  
+
+const INCREMENT = 'counter/increment'
+
+function increment(amount) {
+  return {
+    type: INCREMENT,
+    payload: amount,
+  }
+}
+
+const action = increment(3)
+// { type: 'counter/increment', payload: 3 }
+
+const increment = createAction('counter/increment')
+
+let action = increment()
+// { type: 'counter/increment' }
+
+action = increment(3)
+// returns { type: 'counter/increment', payload: 3 }
+
+console.log(increment.toString())
+// 'counter/increment'
+
+console.log(`The action type is: ${increment}`)
+// 'The action type is: counter/increment'
+
+................
+
+
+
+import { combineReducers } from "redux";
+import { configureStore, createReducer,createAction } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+//createAction behind the scene creates action creator automatically
+
+const increment  = createAction('counter/increment')
+const decrement  = createAction('counter/decrement')
+
+//Builder Pattern
+const counterReducer = createReducer(initalState, builder => {
+    //logic
+    builder.addCase(increment, (state, action) => {
+        state.value++;
+    }).addCase(decrement, (state, action) => {
+        state.value--;
+    }).addDefaultCase((state, action) => { })
+})
+
+const reducers = combineReducers({
+    increment: counterReducer
+})
+
+// const store = createStore(reducers)
+const store = configureStore({
+    reducer: reducers
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() =>onIncrement(increment()) }>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+.............................................................................................
+			 configureStore,createReducer,createAction
+.............................................................................................
+............................................................................................
+..............................................................................................
+				  createSlice
+		actions,reducers we dont need to create- automatation.
+
+Internally, it uses createAction and createReducer, so you may also use Immer to write "mutating" immutable updates.
+import { combineReducers } from "redux";
+import { configureStore, createReducer, createAction, createSlice } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+//redux
+const initalState = {
+    value: 100
+}
+
+const counterSlice = createSlice({
+    name: 'counter', //based on name , reducers, actions will be generated
+    initialState: initalState,
+    reducers: {
+        //reducer name will be the below function name
+        increment(state, action) {
+            state.value++; // immutable immer logic
+        }
+    }
+})
+//actions and reducers
+const { increment } = counterSlice.actions;
+console.log('reducer', counterSlice.reducer)
+
+
+const reducers = combineReducers({
+    increment: counterSlice.reducer
+})
+
+// const store = createStore(reducers)
+const store = configureStore({
+    reducer: reducers
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement(increment())}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+..............................................................................................					Middleware Integration
+..............................................................................................
+Cross cutting concern.
+
+eg:
+logging
+
+configureStore
+ has default middlewares already
+=>Immutability check middleware
+=>Serializability check middleware
+=>Thunk
+
++
+Your middlewars
+
+To add middleware 
+
+const middleware = [thunk, immutableStateInvariant, serializableStateInvariant]
+
+configureStore({
+ reducer: root,
+ middleware:middleware
+})
+
+Way 2 to add middleware
+
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+})
+
+
+
+Use case : Logger Middleware:
+............................
+
+import { combineReducers } from "redux";
+import { configureStore,createSlice } from '@reduxjs/toolkit'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+import logger from 'redux-logger'
+
+//redux
+const initalState = {
+    value: 100
+}
+
+const counterSlice = createSlice({
+    name: 'counter', //based on name , reducers, actions will be generated
+    initialState: initalState,
+    reducers: {
+        //reducer name will be the below function name
+        increment(state, action) {
+            state.value++; // immutable immer logic
+        }
+    }
+})
+//actions and reducers
+const { increment } = counterSlice.actions;
+
+
+const reducers = combineReducers({
+    increment: counterSlice.reducer
+})
+
+//middleware integration
+
+const store = configureStore({
+    reducer: reducers,
+    middleware:(getDefaultMiddleware) => getDefaultMiddleware().concat(logger) 
+})
+
+const Counter = props => {
+    const value = useSelector(state => {
+        return state.increment.value
+    });
+    const onIncrement = useDispatch();
+    return <>
+        <h1>Counter-React-Redux</h1>
+        <h2>Value {value}</h2>
+        <button onClick={() => onIncrement(increment())}>+</button>
+    </>
+}
+
+const App = props => <div>
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+
+</div>
+ReactDOM.render(<App />, document.getElementById('root'))
+..............................................................................................
+			      Thunk Middleware
+............................................................................................
+
+Redux work flow in general is sync way.
+
+
+UI-->click---EventHandler-->dispatch action-------|store--will execute Reducer---new State is stored in Store----|Listener---| React gets data 
+
+
+Async Programming implementations:
+-callbacks
+-Promises
+-async...await
+
+React uses async work flows
+ api calls
+ timer calls
+ websocket
+
+How to write async work flows in Redux:
+
+Redux uses async middlwares
+
+1.thunk
+2.redux-promises
+3.redux-observables
+4.redux saga
+Redux toolkit uses thunk by default and also has included axios api 
+
+RKT provides an api called
+
+createAsyncThunk : 
+  Which is abstraction on Redux thunk middleware.
+
+
+Steps:
+
+1.We need api to return data async
+// A mock function to mimic making an async request for data
+
+function fetchCount(amount = 1) {
+    //here we write async api calls
+    return new Promise((resolve) =>
+        setTimeout(() => resolve({ data: amount }), 5000)
+    );
+}
+
+2.createAsyncThunk api
+// The function below is called a thunk and allows us to perform async logic. It
+// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
+// will call the thunk with the `dispatch` function as the first argument. Async
+// code can then be executed and other actions can be dispatched. Thunks are
+// typically used to make async requests.
+
+export const incrementAsync = createAsyncThunk(
+  'counter/fetchCount',
+  async (amount: number) => {
+    const response = await fetchCount(amount);
+    // The value we return becomes the `fulfilled` action payload
+    return response.data;
+  }
+);
+
+3.handle in createSlice
+
+ Note :you cant use regular case api in the builder
+   // The `extraReducers` field lets the slice handle actions defined elsewhere,
+  // including actions generated by createAsyncThunk or in other slices.
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(incrementAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(incrementAsync.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.value += action.payload;
+      });
+  },
+
+
+
+.............................................................................................
+			  Redux toolkit ready made project
+
+
+create-react-app my-rtkapp --template redux
+
+.............................................................................................
+			  Redux Toolkit Query language
+.............................................................................................
+
+RTK Query is abstraction on createAsyncThunk
+
+createApi(): 
+  The core of RTK Query's functionality. It allows you to define a set of endpoints describe how to retrieve data from a series of endpoints, including configuration of how to fetch and transform that data. In most cases, you should use this once per app, with "one API slice per base URL" as a rule of thumb.
+
+
+fetchBaseQuery(): A small wrapper around fetch that aims to simplify requests. Intended as the recommended baseQuery to be used in createApi for the majority of users.
+<ApiProvider />: Can be used as a Provider if you do not already have a Redux store.
+
+setupListeners(): A utility used to enable refetchOnMount and refetchOnReconnect behaviors.
+
+
+
+createApi:
+.........
+services/user.api
+
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+export const usersApi = createApi({
+  reducerPath: "users",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "https://jsonplaceholder.typicode.com",
+  }),
+  endpoints: (builder) => ({
+    getUsers: builder.query<any[],void>({
+      query: () => `users`,
+    }),
+  }),
+});
+
+//use+getUsers+Query
+export const { useGetUsersQuery } = usersApi;
+
+
+configure Store
+
+export const store = configureStore({
+  reducer: {
+    [usersApi.reducerPath]: usersApi.reducer,
+    counter: counterReducer
+  },
+  middleware: (getDefaultMiddiware) =>
+    getDefaultMiddiware().concat(usersApi.middleware),
+});
+
+setupListeners(store.dispatch);
+
+
+...
+useSelector - is replaced with RTKQuery like below
+
+import { useGetUsersQuery } from "./app/services/user.service";
+
+const { data, error, isLoading, isSuccess, isError } = useGetUsersQuery();
+
+ {isLoading && "Loading..."}
+        {isError && error}
+        {isSuccess &&
+          data &&
+          data.map((user, i) => <h1 key={user.id}>{user.name}</h1>)}
+
+.............................................................................................
+..............................................................................................
+				Single Page Web Application
+..............................................................................................
+
+..............................................................................................
+				Single Page Web Application
+..............................................................................................
+
+Installing Router:
+
+npm install react-router-dom@6 history@5
+
+import React from 'react';
+import ReactDOM from 'react-dom'
+import { BrowserRouter, Link, Routes, Route, Outlet } from 'react-router-dom';
+
+let invoices = [
+    {
+        name: "Santa Monica",
+        number: 1995,
+        amount: "$10,800",
+        due: "12/05/1995"
+    },
+    {
+        name: "Stankonia",
+        number: 2000,
+        amount: "$8,000",
+        due: "10/31/2000"
+    },
+    {
+        name: "Ocean Avenue",
+        number: 2003,
+        amount: "$9,500",
+        due: "07/22/2003"
+    },
+    {
+        name: "Tubthumper",
+        number: 1997,
+        amount: "$14,000",
+        due: "09/01/1997"
+    },
+    {
+        name: "Wide Open Spaces",
+        number: 1998,
+        amount: "$4,600",
+        due: "01/27/2998"
+    }
+];
+
+export function getInvoices() {
+    return invoices;
+}
+
+export function Expenses() {
+    return (
+        <main style={{ padding: "1rem 0" }}>
+            <h2>Expenses</h2>
+        </main>
+    );
+}
+export function Invoices() {
+    let invoices = getInvoices();
+    return (
+        <div style={{ display: "flex" }}>
+            <nav
+                style={{
+                    borderRight: "solid 1px",
+                    padding: "1rem"
+                }}
+            >
+                {invoices.map(invoice => (
+                    <Link
+                        style={{ display: "block", margin: "1rem 0" }}
+                        to={`/invoices/${invoice.number}`}
+                        key={invoice.number}
+                    >
+                        {invoice.name}
+                    </Link>
+                ))}
+            </nav>
+        </div>
+    );
+}
+export function Home() {
+    return (
+        <main style={{ padding: "1rem 0" }}>
+            <h2>Home</h2>
+        </main>
+    );
+}
+
+
+const App = () => {
+    return <div>
+        <BrowserRouter>
+            <h1>Bookkeeper</h1>
+            <nav
+                style={{
+                    borderBottom: "solid 1px",
+                    paddingBottom: "1rem"
+                }}
+            >
+                <Link to="/invoices">Invoices</Link> |{" "}
+                <Link to="/expenses">Expenses</Link>
+            </nav>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="expenses" element={<Expenses />} />
+                <Route path="invoices" element={<Invoices />} />
+            </Routes>
+            <Outlet />
+        </BrowserRouter>
+    </div>
+}
+ReactDOM.render(<App />, document.getElementById('root'));
+.............................................................................................
+				Component Kit Frameworks
+.............................................................................................
+
+
+
+() => (
+  <SprkDictionary
+    idString="dictionary-1"
+    keyValuePairs={{
+      'Email Address': 'sparkdesignsystem@rocketmortgage.com',
+      'Mailing Address': '123 Main Street, Detroit, MI, 48216',
+      'Home Phone': '(123) 456-7890',
+      'Cell Phone': '(098) 765-4321',
+      'Work Phone': '(555) 555-5555',
+      'Work Extension': '55555',
+    }}
+  />
+)
+...........................................................................................
+
+src
+ |
+ app
+   global files
+  store.js
+ features
+   customers
+	-customerslice.js
+	-customer.jsx
+
+
+app.js
+index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

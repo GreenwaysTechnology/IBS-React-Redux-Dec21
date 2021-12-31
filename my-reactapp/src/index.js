@@ -1,25 +1,17 @@
-//Custom Hooks
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-import { useWindowTitle } from './hooks/usewindowtitlehook';
-import { useWindowWidth } from './hooks/usewindowwidthhook';
-//features;
+import React, { Suspense, lazy } from 'react';
+import ReactDOM from 'react-dom'
+//static import : not need if you load dynamically
 
-const Customer = props => {
-    const { setScreen, screen } = useWindowTitle('Customer Manager!!!')
-    const width = useWindowWidth();
-    return <div>
-        <h1>Custom Hooks</h1>
-        <h1>Current Window width {width}</h1>
-        <button onClick={() => {
-            setScreen('CustomerManager App-Update')
-        }}>Update Title</button>
-    </div>
-};
+// import {Artists} from './Artists'
+//const Artists = React.lazy(() => import('./Artists'));
+//import function is dynamic function , which returns promise
+const Artists = lazy(() => import('./Artists'));
 
-const App = () => {
-    return <div>
-        <Customer />
-    </div>
-}
-ReactDOM.render(<App />, document.getElementById('root'));
+const App = () => <div>
+    <Suspense fallback={<div>Loading...</div>}>
+        <Artists />
+    </Suspense>
+</div>
+
+
+ReactDOM.render(<App />, document.getElementById('root'))
